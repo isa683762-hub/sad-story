@@ -1,0 +1,184 @@
+import pygame
+
+pygame.init() 
+pygame.mixer.init()
+
+screen = pygame.display.set_mode((700,400))
+clock = pygame.time.Clock() 
+
+# menu 
+menu = 'intro'
+intro = pygame.transform.scale(pygame.image.load('pixel/menu.png'),(700,400))
+awal = pygame.transform.scale(pygame.image.load('pixel/awal.png'),(700,400))
+awal_rect = awal.get_rect(topleft=(0,0))
+explore = pygame.transform.scale(pygame.image.load('pixel/explore.png'),(250,50))
+explorerect = explore.get_rect(center=(165,350))
+end = pygame.transform.scale(pygame.image.load('pixel/free.png'),(700,400))
+
+# background
+school = pygame.transform.scale(pygame.image.load('pixel/school.png'),(700,400))
+road = pygame.transform.scale(pygame.image.load('pixel/road.png'),(700,400))
+blokm = pygame.transform.scale(pygame.image.load('pixel/blokm.jpeg'),(700,400))
+# sound
+music_stop = False
+timet = 0 
+exhausted = pygame.mixer.Sound('music/breathing.wav')
+voice = exhausted.play()
+
+# character
+player = [pygame.transform.scale(pygame.image.load('pixel/sprite/schoolfit.png'),(500,450)),
+           pygame.transform.scale(pygame.image.load('pixel/sprite/croptopfit.png'),(500,450))]
+animate = 0 
+players = player[animate]
+playersrect = players.get_rect(center=(150,370))     
+playerscity = players.get_rect(center=(150,280))
+
+pink = pygame.transform.scale(pygame.image.load('pixel/sprite/pink.png'),(450,350))
+grey = pygame.transform.scale(pygame.image.load('pixel/sprite/grey.png'),(500,450))
+npc = pygame.transform.scale(pygame.image.load('pixel/sprite/npc.png'),(500,450))
+
+# chat 
+after = False
+text = pygame.font.Font(None, 24) 
+messages = ['idk why i feel tired', 'ugh im fed up with everything', 
+            'its feel like i dont have freedom', 'can i be free?', 
+            'i want to be free', '......']
+chat1 = text.render('i dont feel like going to school.. i think i might go somewhere else', True, 'black')
+chat = text.render('',True,'black')
+counter = 0
+speed = 3
+active_msg = 0 
+done = False
+message = messages[active_msg]
+
+# props 
+icon = pygame.transform.scale(pygame.image.load('pixel/phone.png'),(400,350))
+iconrect = icon.get_rect(topleft=(-160,-130))
+phone = pygame.transform.scale(pygame.image.load('pixel/ph.png'),(400,350))
+phonerect = phone.get_rect(topleft=(150,90))
+
+maps = pygame.transform.scale(pygame.image.load('pixel/map.png'),(400,400))
+mapsrect = maps.get_rect(center=(315,280))
+
+bg = pygame.transform.scale(pygame.image.load('pixel/bg.png'),(300,300))
+mall = pygame.transform.scale(pygame.image.load('pixel/mall.png'),(150,50))
+mallrect = mall.get_rect(topleft=(315,200))
+show = False
+something = False
+
+yes = False
+
+def startss():
+    global timet, voice
+    screen.blit(awal,awal_rect)
+    screen.blit(snip,(0,0))
+    
+    if music_stop == False:
+        timet += 1
+        if timet == 3:
+            voice
+
+def posters():
+    screen.blit(intro,(0,0))
+    screen.blit(explore,explorerect)
+        
+def schools():
+    global menu
+    screen.blit(school,(0,0))
+    screen.blit(players, playersrect)
+    screen.blit(chat1, (0,0))
+
+    # character movement
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_a]:
+        playersrect.x -= 5
+    if keys[pygame.K_d]:
+        playersrect.x += 5
+
+    if playersrect.x == 500:
+        menu = 'city'
+
+def citys(): 
+    global opens
+    screen.blit(road,(0,0))
+    screen.blit(players,playerscity)
+    screen.blit(icon,iconrect)
+
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_a]:
+        playerscity.x -= 5
+    if keys[pygame.K_d]:
+        playerscity.x += 5
+def shoppingcentre():
+    global players, animate, playerscity, menu
+    
+    screen.blit(blokm,(0,0))
+    screen.blit(players,playerscity)
+
+    if yes == True:
+        animate = 1
+        players = player[animate]
+
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_a]:
+        playerscity.x -= 5
+    if keys[pygame.K_d]:
+        playerscity.x += 5
+
+    if playerscity.x > 500:
+        menu = 'outro'
+
+running = True
+while running:
+    clock.tick(60)
+
+    if counter < speed * len(message): counter += 1
+    elif counter >= speed * len(message): done = True
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+        if event.type == pygame.KEYDOWN: 
+            if event.key == pygame.K_RETURN and done and active_msg < len(message) - 1: 
+                active_msg += 1
+                done = False
+                message = messages[active_msg]
+                counter = 0
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if menu == 'intro' and awal_rect.collidepoint(event.pos):
+                menu = 'poster'
+            if explorerect.collidepoint(event.pos):
+                menu = 'school'
+            if iconrect.collidepoint(event.pos):
+                show = not show
+            if mapsrect.collidepoint(event.pos):
+                something = not something
+            if mallrect.collidepoint(event.pos):
+                menu = 'shopping'
+            if playersrect.collidepoint(event.pos):
+                yes = True
+               
+    snip = text.render(message[0:counter//speed],True, 'black')
+            
+    if menu == 'intro':
+        startss()
+    if menu == 'poster':
+        posters()
+    if menu == 'school':
+        schools()
+    if menu == 'city':
+        citys()
+        if show == True:
+            screen.blit(phone,phonerect)
+            screen.blit(maps,mapsrect)
+        if something == True:
+            screen.blit(bg,(300,0))
+            screen.blit(mall,mallrect)
+
+    if menu == 'shopping':
+        shoppingcentre()
+    if menu == 'outro':
+        screen.blit(end,(0,0))
+
+    pygame.display.flip()
